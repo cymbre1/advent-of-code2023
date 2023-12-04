@@ -20,7 +20,7 @@ numbers_written_out = {
     "nine": "9",
 }
 
-input_file = open("input.txt", "r")
+input_file = open("day1/input.txt", "r")
 input_lines = input_file.readlines()
 
 new_lines = []
