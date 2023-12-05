@@ -1,39 +1,28 @@
+import re
 from rich import print
 
 
-def get_full_number(schematic: list, x: int, y: int):
-    number = ""
-
-    for index in schematic[x][y - 2 : y + 2]:
-        if index.isnumeric():
-            number = number + index
-    # print(number)
-    return number
+def is_special_char(c: str):
+    return not c.isalnum() and not c == "." and not c == "\n"
 
 
-def check_for_ajacent_numbers(schematic: list, x: int, y: int):
-    indexes_with_numbers = []
-    transformations = [[-1, -1], [-1, 0], [-1, 1], [0, -1], [0, 0], [0, 1], [1, -1], [1, 0], [1, 1]]
+def surrounding_positions(schematic: list, row: int, span: tuple[int, int]) -> list[int]:
+    return [(y, x) for x in range(span[0] - 1, span[1] + 1) for y in range(row - 1, row + 2) if y >= 0 and y < len(schematic) and x >= 0 and x < len(schematic[row])]
 
-    for t in transformations:
-        if schematic[x + t[0]][y + t[1]].isnumeric():
-            indexes_with_numbers.append((x + t[0], y + t[1]))
 
-    return list(set(indexes_with_numbers))
+def has_adjacent_symbols(schematic: list[list[str]], x: int, y: int, number_length: tuple[int, int]) -> bool:
+    return any(is_special_char(schematic[i[0]][i[1]]) for i in surrounding_positions(schematic, x, number_length))
 
 
 input_file = open("day3/input.txt", "r")
 input_lines = input_file.readlines()
 
-all_adjacent_num_indexes = []
+all_part_numbers = 0
 
-for x in input_lines:
-    for y in x:
-        if not y.isalnum() and not y == "." and not y == "\n":
-            all_adjacent_num_indexes = list(set(all_adjacent_num_indexes + check_for_ajacent_numbers(input_lines, input_lines.index(x), x.index(y))))
+for x, y in enumerate(input_lines):
+    numeric_inputs = re.finditer(r"\d+", y)
+    for num in numeric_inputs:
+        if has_adjacent_symbols(input_lines, x, input_lines[x].index(y), num.span()):
+            all_part_numbers += int(num.group())
 
-all_values = 0
-for index in all_adjacent_num_indexes:
-    all_values += int(get_full_number(input_lines, index[0], index[1]))
-
-print(all_values)
+print(all_part_numbers)
